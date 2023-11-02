@@ -9,10 +9,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RestaurantOrderServicesStub implements RestaurantOrderServices {
 
-    
+    @Autowired
     BillCalculator calc = null;
 
     public RestaurantOrderServicesStub() {
@@ -83,6 +86,8 @@ public class RestaurantOrderServicesStub implements RestaurantOrderServices {
     private static final Map<String, RestaurantProduct> productsMap;
 
     private static final Map<Integer, Order> tableOrders;
+
+    private Map<Integer, Integer> bills = new ConcurrentHashMap<>();
     
 
     static {
@@ -106,6 +111,20 @@ public class RestaurantOrderServicesStub implements RestaurantOrderServices {
         o2.addDish("COKE", 2);
 
         tableOrders.put(3, o2);
+    }
+
+    @Override
+    public Map<Integer, Integer> getBills() {
+        for(int keyOrder: tableOrders.keySet()) {
+            int totalOrder = calc.calculateBill(tableOrders.get(keyOrder), productsMap);
+            bills.put(keyOrder, totalOrder);
+        }
+        return bills;
+    }
+
+    @Override
+    public Map<Integer, Order> getOrders() {
+        return tableOrders;
     }
 
 }

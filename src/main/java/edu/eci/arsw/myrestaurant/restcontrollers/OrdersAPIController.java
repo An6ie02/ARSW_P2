@@ -19,12 +19,19 @@ package edu.eci.arsw.myrestaurant.restcontrollers;
 import edu.eci.arsw.myrestaurant.model.Order;
 import edu.eci.arsw.myrestaurant.model.ProductType;
 import edu.eci.arsw.myrestaurant.model.RestaurantProduct;
+import edu.eci.arsw.myrestaurant.services.RestaurantOrderServices;
 import edu.eci.arsw.myrestaurant.services.RestaurantOrderServicesStub;
+
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,8 +40,31 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  *
  * @author hcadavid
+ * @author AngieMojica
  */
+
+@RestController
+@RequestMapping(value = "/orders")
 public class OrdersAPIController {
 
+    @Autowired
+    RestaurantOrderServices rst;
+    
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<?> manejadorGetRecursoOrders(){
+        try {
+            Map<Integer, Order> tableOrders = rst.getOrders();
+            Map<Integer, Integer> tableBills = rst.getBills();
+            JSONArray jsonArray = new JSONArray();
+            for (Integer orderKey : tableOrders.keySet()) {
+                JSONObject json = new JSONObject(rst.getTableOrder(orderKey));
+                json.put("total", tableBills.get(orderKey));
+                jsonArray.put(json);
+            }
+            return new ResponseEntity<>(jsonArray.toString(),HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            return new ResponseEntity<>("Error",HttpStatus.NOT_FOUND);
+        }        
+    }
     
 }
